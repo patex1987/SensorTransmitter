@@ -62,7 +62,7 @@ class TemperatureSensor(object):
         Increases or decreases the temperature value
         '''
         actual_cycles = random.randrange(1, max_cycles)
-        for _ in actual_cycles:
+        for _ in range(actual_cycles):
             if not self._thread_close_flag:
                 raise ThreadTerminatedException
             act_change = random.uniform(value_range[0], value_range[1])
@@ -74,6 +74,8 @@ class TemperatureSensor(object):
         Increments the temperature value
         '''
         new_value = self._act_temp + (temp_change * self._direction)
+        if not can_change_direcion:
+            new_value = self._act_temp + temp_change
         if new_value < self._min_temp or new_value > self._max_temp:
             if can_change_direcion:
                 self._direction *= -1
