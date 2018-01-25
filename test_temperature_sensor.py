@@ -117,3 +117,13 @@ def test_repeated_change(sensor):
                  (1, 25, 4, (2, 10)))
     for test_set in test_sets:
         check_repeated_change(*test_set)
+
+def test_stagnation(sensor):
+    '''
+    Tests if during the stagnation type of change the temperature value doesnt change too much
+    '''
+    for _ in range(10):
+        sensor._act_temp = 79.95
+        sensor._thread_close_flag = True
+        sensor._repeated_change(max_cycles=10, value_range=(-0.2, 0.2), can_change_direction=False)
+        assert sensor.actual_temperature >= 77.95 and sensor.actual_temperature < 80
