@@ -15,10 +15,10 @@ def sensor():
     return TemperatureSensor()
 
 
-def incrementer(init_direction, init_temp, increment_value):
+def incrementer(sensor, init_direction, init_temp, increment_value, change_direction):
     sensor._direction = init_direction
     sensor._act_temp = init_temp
-    sensor._increment_temp(increment_value, False)
+    sensor._increment_temp(increment_value, change_direction)
     return sensor.actual_temperature
     
 
@@ -56,15 +56,21 @@ def test_temperature_property(sensor):
 
 def test_increment(sensor):
     '''
-    Checks if _increment_temp() works correctly
+    Checks if _increment_temp() works correctly. I.e. returns expected values,
+    and doesnt change the direction, if can_change_direction is set to False
     '''
     test_sets = ((1, 25, 0.5, 25.5),
                  (1, 50, 10, 60),
                  (1, 78, 6, 78),
                  (1, 12, -10, 12))
     for test_set in test_sets:
-        new_value = incrementer(*test_set[:-1])
-        assert new_value == test_set[-1]
+        new_value = incrementer(sensor=sensor,
+                                init_direction=test_set[0],
+                                init_temp=test_set[1],
+                                increment_value=test_set[2],
+                                change_direction=False)
+        assert new_value == test_set[3]
+        assert sensor._direction == test_set[0]
 
 def test_increment_with_direction_change(sensor):
     '''
