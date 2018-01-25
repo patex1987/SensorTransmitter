@@ -72,19 +72,48 @@ def test_increment_wo_direction_change(sensor):
         assert new_value == test_set[3]
         assert sensor._direction == test_set[0]
 
+
 def test_increment_with_direction_change(sensor):
     '''
     Checks if increment changes the movement direction if the temperature
     value reaches the limit of the possible values
     '''
-    def change_multiple_times(init_direction, init_temp, change_sets):
+    def make_multiple_temp_changes(init_direction, init_temp, change_sets):
         sensor._direction = init_direction
         sensor._act_temp = init_temp
         for change_set in change_sets:
             new_value = incrementer(sensor=sensor,
                                     init_direction=sensor._direction,
                                     init_temp=sensor.actual_temperature,
-                                    increment_value=change_set[0]
+                                    increment_value=change_set[0],
                                     change_direction=True)
             assert change_set[1] == sensor._direction
             assert change_set[2] == sensor.actual_temperature
+    
+    test_sets = ((1, 78, [[3, -1, 78], [3, -1, 75]]),
+                 (-1, 25, [[3, -1, 22], [3, 1, 22], [3, 1, 25]]))
+    for test_set in test_sets:
+        make_multiple_temp_changes(*test_set)
+
+def test_repeated_change(sensor):
+    '''
+    Tests if _repeated_change() changes temperature value properly (after
+    applying multiple changes)
+    
+    Note: Here, we are not testing cases, where the direction changes during the movement
+    '''
+    def check_repeated_change(init_direction, init_temp, max_cycles, value_range):
+        sensor._direction = init_direction
+        sensor._act_temp = init_temp
+        sensor._thread_close_flag = True
+        sensor._repeated_change(max_cycles=max_cycles, value_range=value_range, can_change_direction=False)
+        new_temp = sensor.actual_temperature
+        expected_minimum = init_temp + value_range[0]
+        expected_maximum = init_temp + (value_range[1] * (max_cycles - 1))
+        
+        assert new_temp >=  expected_minimum and new_temp <= expected_maximum
+    
+    test_sets = ((1, 25, 2, (2, 2)),
+                 (1, 25, 4, (2, 10)))
+    for test_set in test_sets:
+        check_repeated_change(*test_set)
