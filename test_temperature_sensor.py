@@ -5,6 +5,8 @@ Created on 24. 1. 2018
 '''
 import pytest
 from sensor_generator import TemperatureSensor, OutOfBoundException
+import threading
+import time
 
 
 @pytest.fixture
@@ -127,3 +129,18 @@ def test_stagnation(sensor):
         sensor._thread_close_flag = True
         sensor._repeated_change(max_cycles=10, value_range=(-0.2, 0.2), can_change_direction=False)
         assert sensor.actual_temperature >= 77.95 and sensor.actual_temperature < 80
+        
+def test_running_thread(sensor):
+    '''
+    Tests if background thread is running and terminating properly, and
+    whether it is changing the value
+    '''
+    sensor._act_temp = 25
+    sensor._update_interval = 0.05
+    sensor.run_data_generation()
+    assert sensor._background_activity.is_alive()
+    sensor.stop_data_generation()
+    time.sleep(sensor._update_interval)
+    assert not sensor._background_activity.is_alive()
+    assert sensor.actual_temperature != 25
+    

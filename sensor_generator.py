@@ -1,4 +1,4 @@
-from threading import Thread
+import threading
 import random
 import time
 
@@ -27,6 +27,14 @@ class TemperatureSensor(object):
             raise OutOfBoundException('Initial temperature out of bound')
         self._act_temp = init_temp
         self._direction = (-1)**random.randrange(2)
+        self._thread_close_flag = False
+        self._background_activity = threading.Thread(target=self._background_modification, name='sensor_generation', daemon=True)
+
+    def run_data_generation(self):
+        self._thread_close_flag = True
+        self._background_activity.start()
+
+    def stop_data_generation(self):
         self._thread_close_flag = False
 
     @property
