@@ -54,7 +54,7 @@ def test_temperature_property(sensor):
     assert sensor.actual_temperature == sensor._act_temp
 
 
-def test_increment(sensor):
+def test_increment_wo_direction_change(sensor):
     '''
     Checks if _increment_temp() works correctly. I.e. returns expected values,
     and doesnt change the direction, if can_change_direction is set to False
@@ -77,8 +77,14 @@ def test_increment_with_direction_change(sensor):
     Checks if increment changes the movement direction if the temperature
     value reaches the limit of the possible values
     '''
-    sensor._direction = 1
-    sensor._act_temp = 78
-    sensor._increment_temp(10, True)
-    sensor._increment_temp(10, True)
-    assert sensor.actual_temperature == 68
+    def change_multiple_times(init_direction, init_temp, change_sets):
+        sensor._direction = init_direction
+        sensor._act_temp = init_temp
+        for change_set in change_sets:
+            new_value = incrementer(sensor=sensor,
+                                    init_direction=sensor._direction,
+                                    init_temp=sensor.actual_temperature,
+                                    increment_value=change_set[0]
+                                    change_direction=True)
+            assert change_set[1] == sensor._direction
+            assert change_set[2] == sensor.actual_temperature
