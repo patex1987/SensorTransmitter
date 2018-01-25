@@ -73,7 +73,7 @@ class TemperatureSensor(object):
         '''
         Increments the temperature value
         '''
-        new_value = (self._act_temp + temp_change) * self._direction
+        new_value = self._act_temp + (temp_change * self._direction)
         if new_value < self._min_temp or new_value > self._max_temp:
             if can_change_direcion:
                 self._direction *= -1
