@@ -3,10 +3,10 @@ Created on 24. 1. 2018
 
 @author: Patex
 '''
+import time
+import threading
 import pytest
 from sensor_generator import TemperatureSensor, OutOfBoundException
-import threading
-import time
 
 
 @pytest.fixture
@@ -17,12 +17,19 @@ def sensor():
     return TemperatureSensor()
 
 
-def incrementer(sensor, init_direction, init_temp, increment_value, change_direction):
+def incrementer(sensor,
+                init_direction,
+                init_temp,
+                increment_value,
+                change_direction):
+    '''
+    increments the value of the sensor
+    '''
     sensor._direction = init_direction
     sensor._act_temp = init_temp
     sensor._increment_temp(increment_value, change_direction)
     return sensor.actual_temperature
-    
+
 
 def test_actual_value(sensor):
     '''
@@ -59,7 +66,7 @@ def test_temperature_property(sensor):
 def test_increment_wo_direction_change(sensor):
     '''
     Checks if _increment_temp() works correctly. I.e. returns expected values,
-    and doesnt change the direction, if can_change_direction is set to False
+    and doesn't change the direction, if can_change_direction is set to False
     '''
     test_sets = ((1, 25, 0.5, 25.5),
                  (1, 50, 10, 60),
@@ -90,46 +97,59 @@ def test_increment_with_direction_change(sensor):
                                     increment_value=change_set[0],
                                     change_direction=True)
             assert change_set[1] == sensor._direction
-            assert change_set[2] == sensor.actual_temperature
-    
+            assert change_set[2] == new_value
+
     test_sets = ((1, 78, [[3, -1, 78], [3, -1, 75]]),
                  (-1, 25, [[3, -1, 22], [3, 1, 22], [3, 1, 25]]))
     for test_set in test_sets:
         make_multiple_temp_changes(*test_set)
 
+
 def test_repeated_change(sensor):
     '''
     Tests if _repeated_change() changes temperature value properly (after
     applying multiple changes)
-    
-    Note: Here, we are not testing cases, where the direction changes during the movement
+
+    Note: Here, we are not testing cases, where the direction changes during
+    the movement
     '''
-    def check_repeated_change(init_direction, init_temp, max_cycles, value_range):
+    def check_repeated_change(init_direction,
+                              init_temp,
+                              max_cycles,
+                              value_range):
         sensor._direction = init_direction
         sensor._act_temp = init_temp
         sensor._thread_close_flag = True
-        sensor._repeated_change(max_cycles=max_cycles, value_range=value_range, can_change_direction=False)
+        sensor._repeated_change(max_cycles=max_cycles,
+                                value_range=value_range,
+                                can_change_direction=False)
         new_temp = sensor.actual_temperature
         expected_minimum = init_temp + value_range[0]
         expected_maximum = init_temp + (value_range[1] * (max_cycles - 1))
-        
-        assert new_temp >=  expected_minimum and new_temp <= expected_maximum
-    
+
+        assert new_temp >= expected_minimum and new_temp <= expected_maximum
+
     test_sets = ((1, 25, 2, (2, 2)),
                  (1, 25, 4, (2, 10)))
     for test_set in test_sets:
         check_repeated_change(*test_set)
 
+
 def test_stagnation(sensor):
     '''
-    Tests if during the stagnation type of change the temperature value doesnt change too much
+    Tests if during the stagnation type of change the temperature value doesnt
+    change too much
     '''
     for _ in range(10):
         sensor._act_temp = 79.95
         sensor._thread_close_flag = True
-        sensor._repeated_change(max_cycles=10, value_range=(-0.2, 0.2), can_change_direction=False)
-        assert sensor.actual_temperature >= 77.95 and sensor.actual_temperature < 80
-        
+        sensor._repeated_change(max_cycles=10,
+                                value_range=(-0.2, 0.2),
+                                can_change_direction=False)
+        end_temperature = sensor.actual_temperature
+        assert end_temperature >= 77.95 and end_temperature < 80
+
+
 def test_running_thread(sensor):
     '''
     Tests if background thread is running and terminating properly, and
@@ -143,4 +163,3 @@ def test_running_thread(sensor):
     time.sleep(sensor._update_interval)
     assert not sensor._background_activity.is_alive()
     assert sensor.actual_temperature != 25
-    
