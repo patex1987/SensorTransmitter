@@ -1,13 +1,27 @@
+'''
+Created on 24. 1. 2018
+This module contains the class Sensor
+This class can be used to simulate real life sensor. One can define minimum and
+maximum temperature range and random value generation. Currently only a very
+simple algorithm is implemented. The sensor value is either rising decreasing.
+A background thread is modifying the sensor's value
+
+@author: Patex
+'''
 import threading
 import random
 import time
 
 
 class OutOfBoundException(Exception):
+    '''Raised if the initial value is beyondd the possible values of the sensors
+    '''
     pass
 
 
 class ThreadTerminatedException(Exception):
+    '''Only for internal usage - Used to terminate background thread.
+    '''
     pass
 
 
@@ -28,7 +42,9 @@ class TemperatureSensor(object):
         self._act_temp = init_temp
         self._direction = (-1)**random.randrange(2)
         self._thread_close_flag = False
-        self._background_activity = threading.Thread(target=self._background_modification, name='sensor_generation', daemon=True)
+        self._background_activity = threading.Thread(target=self._background_modification,
+                                                     name='sensor_generation',
+                                                     daemon=True)
 
     def run_data_generation(self):
         '''
