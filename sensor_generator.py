@@ -31,10 +31,20 @@ class TemperatureSensor(object):
         self._background_activity = threading.Thread(target=self._background_modification, name='sensor_generation', daemon=True)
 
     def run_data_generation(self):
+        '''
+        Runs the background thread for sensor data generation
+        '''
+        if self._background_activity.is_alive():
+            return
         self._thread_close_flag = True
         self._background_activity.start()
 
     def stop_data_generation(self):
+        '''
+        Stops the background thread
+        '''
+        if not self._background_activity.is_alive():
+            return
         self._thread_close_flag = False
 
     @property
@@ -71,6 +81,7 @@ class TemperatureSensor(object):
         '''
         actual_cycles = random.randrange(1, max_cycles)
         for _ in range(actual_cycles):
+            time.sleep(self._update_interval)
             if not self._thread_close_flag:
                 raise ThreadTerminatedException
             act_change = random.uniform(value_range[0], value_range[1])
