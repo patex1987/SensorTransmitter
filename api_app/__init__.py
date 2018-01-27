@@ -1,8 +1,8 @@
 from flask import Flask
 
-from sensor_generator import TemperatureSensor
+from sensor_generator import Sensor
 
-sensor = TemperatureSensor()
+sensor = Sensor()
 sensor.run_data_generation()
 
 app = Flask(__name__)
