@@ -36,12 +36,14 @@ class Sensor(object):
     def __init__(self,
                  min_value,
                  max_value,
+                 unit,
                  move_range=(0.01, 1.0),
                  init_value=25):
         if init_value < min_value or init_value >= max_value:
             raise OutOfBoundException('Initial value out of bound')
         self._min_value = min_value
         self._max_value = max_value
+        self.unit = unit
         self._move_range = move_range
         self._act_value = init_value
         self._direction = (-1)**random.randrange(2)
