@@ -28,20 +28,24 @@ class ThreadTerminatedException(Exception):
 class Sensor(object):
     '''A class to generate random sensor data
     '''
-    _min_value = 20
-    _max_value = 80
     _max_stagnations = 7
     _max_movements = 7
     _stagnation_range = (-0.25, 0.25)
-    _move_range = (0.01, 1.0)
     _update_interval = 1
 
-    def __init__(self, init_value=25):
-        if init_value < self._min_value or init_value >= self._max_value:
+    def __init__(self,
+                 min_value,
+                 max_value,
+                 move_range=(0.01, 1.0),
+                 init_value=25):
+        if init_value < min_value or init_value >= max_value:
             raise OutOfBoundException('Initial value out of bound')
+        self._min_value = min_value
+        self._max_value = max_value
+        self._move_range = move_range
         self._act_value = init_value
         self._direction = (-1)**random.randrange(2)
-        self._thread_close_flag = False
+        self._thread_run_flag = False
         self._background_activity = threading.Thread(target=self._background_modification,
                                                      name='sensor_generation',
                                                      daemon=True)
@@ -52,7 +56,7 @@ class Sensor(object):
         '''
         if self._background_activity.is_alive():
             return
-        self._thread_close_flag = True
+        self._thread_run_flag = True
         self._background_activity.start()
 
     def stop_data_generation(self):
@@ -61,7 +65,7 @@ class Sensor(object):
         '''
         if not self._background_activity.is_alive():
             return
-        self._thread_close_flag = False
+        self._thread_run_flag = False
 
     @property
     def actual_value(self):
@@ -98,7 +102,7 @@ class Sensor(object):
         actual_cycles = random.randrange(1, max_cycles)
         for _ in range(actual_cycles):
             time.sleep(self._update_interval)
-            if not self._thread_close_flag:
+            if not self._thread_run_flag:
                 raise ThreadTerminatedException
             act_change = random.uniform(value_range[0], value_range[1])
             self._change_value(amount=act_change,
