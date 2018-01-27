@@ -1,5 +1,5 @@
 from api_app import app
-from api_app import sensor
+from api_app import temperature_sensor, humidity_sensor
 from flask import request
 from flask import jsonify
 
@@ -36,8 +36,10 @@ def get_sensor_values():
     arguments = request.args
     if arguments:
         raise InvalidRequest(message='No paramaters accepted')
-    actual_temp = sensor.actual_value
-    result_val = {'temperature': actual_temp}
+    actual_temp = temperature_sensor.actual_value
+    actual_humidity = humidity_sensor.actual_value
+    result_val = {'temperature': actual_temp,
+                  'humidity': actual_humidity}
     return jsonify(result_val)
 
 
