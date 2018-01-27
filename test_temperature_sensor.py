@@ -14,7 +14,10 @@ def sensor():
     '''
     returns a basic TemperatureSensor object
     '''
-    return Sensor()
+    return Sensor(min_value=20,
+                  max_value=80,
+                  move_range=(0.01, 1.0),
+                  init_value=25)
 
 
 def incrementer(sensor,
@@ -36,8 +39,8 @@ def test_actual_value(sensor):
     Tests if a sensor contains an _act_value member
     '''
     assert isinstance(sensor._act_value, int)
-    assert sensor._act_value >= Sensor._min_value
-    assert sensor._act_value <= Sensor._max_value
+    assert sensor._act_value >= sensor._min_value
+    assert sensor._act_value <= sensor._max_value
 
 
 def test_outofbound_raises():
@@ -46,7 +49,10 @@ def test_outofbound_raises():
     initial value
     '''
     with pytest.raises(OutOfBoundException):
-        Sensor(init_value=-25)
+        Sensor(min_value=20,
+               max_value=80,
+               move_range=(0.01, 1.0),
+               init_value=-25)
 
 
 def test_movement_direction(sensor):
@@ -119,7 +125,7 @@ def test_repeated_change(sensor):
                               value_range):
         sensor._direction = init_direction
         sensor._act_value = init_value
-        sensor._thread_close_flag = True
+        sensor._thread_run_flag = True
         sensor._repeated_change(max_cycles=max_cycles,
                                 value_range=value_range,
                                 can_change_direction=False)
@@ -143,7 +149,7 @@ def test_stagnation(sensor):
     sensor._update_interval = 0.01
     for _ in range(10):
         sensor._act_value = 79.95
-        sensor._thread_close_flag = True
+        sensor._thread_run_flag = True
         sensor._repeated_change(max_cycles=10,
                                 value_range=(-0.2, 0.2),
                                 can_change_direction=False)
