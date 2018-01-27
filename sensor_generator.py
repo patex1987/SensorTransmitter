@@ -101,16 +101,16 @@ class Sensor(object):
             if not self._thread_close_flag:
                 raise ThreadTerminatedException
             act_change = random.uniform(value_range[0], value_range[1])
-            self._increment_value(value_change=act_change,
-                                  can_change_direcion=can_change_direction)
+            self._change_value(amount=act_change,
+                               can_change_direcion=can_change_direction)
 
-    def _increment_value(self, value_change, can_change_direcion):
+    def _change_value(self, amount, can_change_direcion):
         '''
         Increments the sensor value
         '''
-        new_value = self._act_value + (value_change * self._direction)
+        new_value = self._act_value + (amount * self._direction)
         if not can_change_direcion:
-            new_value = self._act_value + value_change
+            new_value = self._act_value + amount
         if new_value < self._min_value or new_value > self._max_value:
             if can_change_direcion:
                 self._direction *= -1
