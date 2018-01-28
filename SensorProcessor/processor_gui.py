@@ -1,3 +1,12 @@
+'''
+This module contains the main GUI for the sensor data processing. GUI is
+designed using Qt. This app communicates with the sensor generator API, to
+download randomly generated sensor data, visualize it and calculate possible
+output for different actuators. It uses multithreading, as the GUI should stay
+responsible even during data retrieval and other type of operations
+
+@author: Patex
+'''
 from PyQt4 import QtGui
 from PyQt4.QtCore import QThread, SIGNAL, QTimer
 import sys
@@ -11,8 +20,11 @@ import numpy as np
 
 
 class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
-
+    '''The main GUI class
+    '''
     def __init__(self):
+        '''GUI's __init__ method
+        '''
         super(SensorProcessor, self).__init__()
         self.setupUi(self)
         self._init_elems()
@@ -31,8 +43,10 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.show_set_limits()
 
     def _init_elems(self):
-        '''initializes the elements on the GUI
-        Can be used on restarting the process
+        '''initializes some of the elements on the GUI
+        
+        This method can be used if the user stops the data retrieval and
+        restarts the whole measurement cycle.
         '''
         self.btn_Apply_Limit.setEnabled(False)
         self.btn_Stop.setEnabled(False)
@@ -50,6 +64,9 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         
     def _connect_signals(self):
         '''Connects signals between the main thread and the background thread
+        
+        used for communication between the main thread and the data retrieval
+        thread
         '''
         self.connect(self._retrieval_thread,
                      SIGNAL('update_values(PyQt_PyObject)'),
@@ -82,8 +99,8 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
               
 
     def start_retrieval(self):
-        '''Runs the background thread to collect the data from the generator
-        API
+        '''Runs the background thread to collect the data from the sensor
+        generator API
         '''
         if self._retrieval_thread.isRunning():
             return
@@ -125,7 +142,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
             self.graph_timer.singleShot(1000, self.update_direct_graphs)
 
     def update_actuator_graphs(self):
-        '''Updates the actuator graphs
+        '''Updates the actuator graphs (cooling, heating, ventilation)
         '''
         x_heating, y_heating = self.heating_buffer.get_actual_filled_values()
         x_cooling, y_cooling = self.cooling_buffer.get_actual_filled_values()
@@ -139,7 +156,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
             self.graph_timer.singleShot(1000, self.update_actuator_graphs)
 
     def show_set_limits(self):
-        '''updates the actually set limits on the GUI
+        '''updates the actually set temperature limits on the GUI
         '''
         self.lbl_set_lower.setText(str(self.set_lower_limit))
         self.lbl_set_upper.setText(str(self.set_upper_limit))
@@ -184,7 +201,8 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         '''Starts the actuator processing thread
         
         Opposed to the _retrieval_thread, this thread run one sequence of
-        commands
+        commands. Actually this could have been done in the main thread, it is
+        migrated to a thread only for demonstration purposes
         '''
         self._actuator_thread = ProcessActuators(act_temperature,
                                                  act_humidity,
@@ -254,6 +272,8 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
 
 
 def main():
+    '''GUI launcher
+    '''
     app = QtGui.QApplication(sys.argv)
     form = SensorProcessor()
     form.show()
