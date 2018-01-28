@@ -22,6 +22,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self._connect_signals()
         self._init_buffers()
         self._stop_plot = False
+        self._connection_error = 0
         self.graph_timer = QTimer()
         self.lbl_act_lower.setText(str(self.slider_lower.value()))
         self.lbl_act_upper.setText(str(self.slider_upper.value()))
@@ -86,6 +87,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         '''
         if self._retrieval_thread.isRunning():
             return
+        self._connection_error = 0
         self.btn_Start.setEnabled(False)
         self.btn_Stop.setEnabled(True)
         self.btn_Apply_Limit.setEnabled(True)
@@ -152,6 +154,9 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.lbl_Humidity_Value.setText(humidity)
 
     def closeEvent(self, event):
+        '''Once the user exits, the app waits for the threads to finish (To
+        terminate everything correctly)
+        '''
         print('CLOSING')
         if self._retrieval_thread.isRunning():
             print('CLOSING retrieval')
@@ -205,11 +210,19 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.btn_Stop.setEnabled(False)
         self.btn_Apply_Limit.setEnabled(False)
 
+
     def _sensor_error(self):
         '''Error handler. Fired when the background thread can't read the
         sensor values
         '''
-        pass
+        self._connection_error += 1
+        if self._connection_error == 1:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Data is not available')
+            msgBox.exec_()
+        self.finish_retrieval()
+
+
 
     def  _update_lower_slider(self, slider_value):
         '''updates the label linked to the lower slider
