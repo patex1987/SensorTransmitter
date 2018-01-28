@@ -106,6 +106,9 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self._finished()
         self._retrieval_thread.start_thread = False
         self._stop_plot = True
+        self._retrieval_thread.wait()
+        self._init_elems()
+        self._init_buffers()
 
     def update_direct_graphs(self):
         '''Updates the Temperature and humidity plot
