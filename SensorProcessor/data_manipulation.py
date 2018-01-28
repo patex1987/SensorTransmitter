@@ -3,6 +3,7 @@ from ring_buffer import RingBuffer
 import requests
 from requests.exceptions import ConnectionError
 import numpy as np
+from collections import namedtuple
 
 
 class NoDataError(Exception):
@@ -52,28 +53,57 @@ class GetSensorsThread(QThread):
 
 
 class ProcessActuators(QThread):
+    '''This thread processes the actual values of the sensors and compares
+    them to the limit values
+    
+    I.e. calculates the states of the actuators
+    '''
     def __init__(self,
-                 start_thread=False,
+                 actual_temperature,
+                 actual_humidity,
                  lower_temp_limit,
                  upper_temp_limit,
-                 humidity_limit=40):
+                 humidity_limit=40,
+                 min_voltage=0,
+                 max_voltage=10000):
         '''
         method constructor
         '''
         super().__init__()
-        self.start_thread = start_thread
-        self.update_interval_secs = update_interval_secs
+        self._actual_temperature = actual_temperature
+        self._actual_humidity = actual_humidity
+        self._lower_temp_limit = lower_temp_limit
+        self._upper_temp_limit = upper_temp_limit
+        self._humidity_limit = humidity_limit
+        self._min_voltage = min_voltage
+        self._max_voltage = max_voltage
+ 
 
     def __del__(self):
         self.wait()
 
-    def _get_sensor_data(self):
-        '''Downloads the data from the API
-        '''
-
     def run(self):
-        '''Runs the thread until a signal is sent by the main thread to stop
+        '''Calculates the output states of the actuators
         '''
+        Actuators = collections.namedtuple('Actuators',
+                                           'heating cooling ventilation')
+        heating = int(self._actual_temperature < self._lower_temp_limit)
+        cooling = int(self._actual_temperature > self._upper_temp_limit)
+        ventilation = self._calculate_ventilation_state()
+        actual_actuators = Actuators(heating=heating,
+                                     cooling=cooling,
+                                     ventilation=ventilation)
+        self.emit(SIGNAL('actuator_values(PyQt_PyObject)'),
+                  actual_actuators)
+
+    def _calculate_ventilation_state(self)
+        '''based on linear regression calculates the voltage of the
+        ventilation
+        '''
+        coeff_a = self._max_voltage - self._min_voltage
+        coeff_b = self.min_voltage - (coeff_a*self._humidity_limit)
+        output_voltage = (coeff_a*self._actual_humidity) + coeff_b
+        
 
 
 class XYBuffer(object):
