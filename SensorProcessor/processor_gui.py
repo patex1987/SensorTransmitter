@@ -15,26 +15,38 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         super(SensorProcessor, self).__init__()
         self.setupUi(self)
         self._init_elems()
-        self.btn_Start.clicked.connect(self.start_retrieval)
-        self.btn_Stop.clicked.connect(self.finish_retrieval)
+        self._assign_events()
         self._retrieval_thread = GetSensorsThread()
         self._connect_signals()
         self._init_buffers()
         self._stop_plot = False
         self.graph_timer = QTimer()
+        self.lbl_act_lower.setText(str(self.slider_lower.value()))
+        self.lbl_act_upper.setText(str(self.slider_upper.value()))
+        self.set_lower_limit = 10
+        self.set_upper_limit = 40
+        self.show_set_limits()
 
     def _init_elems(self):
         '''initializes the elements on the GUI
+        Can be used on restarting the process
         '''
-        #self.inp_Lower_Temp.setEnabled(False)
-        #self.inp_Upper_Temp.setEnabled(False)
         self.btn_Apply_Limit.setEnabled(False)
         self.btn_Stop.setEnabled(False)
         self.lbl_Temp_Value.setText('')
         self.lbl_Humidity_Value.setText('')
 
+    def _assign_events(self):
+        '''Assigns events to the GUI elements
+        '''
+        self.btn_Start.clicked.connect(self.start_retrieval)
+        self.btn_Stop.clicked.connect(self.finish_retrieval)
+        self.slider_lower.valueChanged[int].connect(self._update_lower_slider)
+        self.slider_upper.valueChanged[int].connect(self._update_upper_slider)
+        self.btn_Apply_Limit.clicked.connect(self._try_update_limits)
+        
     def _connect_signals(self):
-        '''Connects signals betwwen the main thread and the background thread
+        '''Connects signals between the main thread and the background thread
         '''
         self.connect(self._retrieval_thread,
                      SIGNAL('update_values(PyQt_PyObject)'),
@@ -64,6 +76,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
             return
         self.btn_Start.setEnabled(False)
         self.btn_Stop.setEnabled(True)
+        self.btn_Apply_Limit.setEnabled(True)
         self._retrieval_thread.start_thread = True
         self._retrieval_thread.start()
         self._stop_plot = False
@@ -81,6 +94,27 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self._retrieval_thread.start_thread = False
         self._stop_plot = True
 
+    def update_direct_graphs(self):
+        '''Updates the Temperature and humidity plot
+        '''
+        x_temp, y_temp = self.temperature_buffer.get_actual_filled_values()
+        x_humid, y_humid = self.humidity_buffer.get_actual_filled_values()
+
+        self.gr_Temperature.plot(x_temp, y_temp, pen='r', clear=True)
+        self.gr_Humidity.plot(x_humid, y_humid, pen='r', clear=True)
+
+        if not self._stop_plot:
+            self.graph_timer.singleShot(1000, self.update_direct_graphs)
+
+    def show_set_limits(self):
+        '''updates the actually set limits on the GUI
+        '''
+        self.lbl_set_lower.setText(str(self.set_lower_limit))
+        self.lbl_set_upper.setText(str(self.set_upper_limit))
+
+    def closeEvent(self, event):
+        pass
+
     def _process_values(self, sensor_values):
         '''Processes the data coming from the background thread
         '''
@@ -95,12 +129,23 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
     def _finished(self):
         self.btn_Start.setEnabled(True)
         self.btn_Stop.setEnabled(False)
+        self.btn_Apply_Limit.setEnabled(False)
 
     def _sensor_error(self):
         '''Error handler. Fired when the background thread can't read the
         sensor values
         '''
         pass
+
+    def  _update_lower_slider(self, slider_value):
+        '''updates the label linked to the lower slider
+        '''
+        self.lbl_act_lower.setText(str(slider_value))
+
+    def  _update_upper_slider(self, slider_value):
+        '''updates the label linked to the lower slider
+        '''
+        self.lbl_act_upper.setText(str(slider_value))
 
     def update_direct_labels(self, temp_val, temp_unit, humid_val,
                              humid_unit):
@@ -111,21 +156,24 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.lbl_Temp_Value.setText(temperature)
         self.lbl_Humidity_Value.setText(humidity)
 
-    def update_direct_graphs(self):
-        '''Updates the Temperature and humidity plot
+    def _try_update_limits(self):
+        '''Checks the values of the horizontal sliders, if the values are ok,
+        then it updates the set values
         '''
-        x_temp, y_temp = self.temperature_buffer.get_actual_filled_values()
-        x_humid, y_humid = self.humidity_buffer.get_actual_filled_values()
-
-        self.gr_Temperature.plot(x_temp, y_temp, pen='r', clear=True)
-        self.gr_Humidity.plot(x_humid, y_humid, pen='r', clear=True)
-
-        if not self._stop_plot:
-            self.graph_timer.singleShot(3, self.update_direct_graphs)
-
-    def closeEvent(self, event):
-        pass
-
+        new_lower_limit = self.slider_lower.value()
+        new_upper_limit = self.slider_upper.value()
+        if new_lower_limit >= new_upper_limit:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Lower limit cant be higher (or equal) than upper limit.')
+            msgBox.exec_()
+            return
+        if new_lower_limit == self.set_lower_limit and \
+           new_upper_limit == self.set_upper_limit:
+            return
+        self.set_lower_limit = new_lower_limit
+        self.set_upper_limit = new_upper_limit
+        self.show_set_limits()
+        
 
 def main():
     app = QtGui.QApplication(sys.argv)
