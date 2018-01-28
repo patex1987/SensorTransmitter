@@ -8,13 +8,23 @@ from datetime import datetime as dt
 
 
 class NoDataError(Exception):
+    '''This exception is raised if the data can't be retrieved from the API,
+    or incorrect format is returned
+    '''
     pass
 
 
 class GetSensorsThread(QThread):
+    '''This Thread is used to retrieve data from the API and sends them back
+    to the main thread using Qt signals
+    '''
     def __init__(self, start_thread=False, update_interval_secs=1):
-        '''
-        method constructor
+        '''method constructor
+        Args:
+            start_thread (bool): a bool flag indicating whether the thread
+                should be terminated
+            update_interval_secs (int): interval between successive API
+                requests. Expressed in seconds
         '''
         super().__init__()
         self.start_thread = start_thread
@@ -53,7 +63,7 @@ class GetSensorsThread(QThread):
 
 class ProcessActuators(QThread):
     '''This thread processes the actual values of the sensors and compares
-    them to the limit values
+    them to the limit values, to calculate the actuator outputs
     
     I.e. calculates the states of the actuators
     '''
@@ -65,8 +75,20 @@ class ProcessActuators(QThread):
                  humidity_limit=40,
                  min_voltage=0,
                  max_voltage=10000):
-        '''
-        method constructor
+        '''method constructor
+
+        Args:
+            actual_temperature (number like): actual temperature value.
+            actual_humidity (number like): actual humidity value.
+            lower_temp_limit(number like): lower temperature limit for the
+                heating.
+            upper_temp_limit(number like): upper temperature limit for the
+                cooling.
+            humidity_limit(number like): optimal humidity level
+            min_voltage(number like): minimum possible voltage level of the
+                ventilation
+            max_voltage(number like): maximum possible voltage level of the
+                ventilation
         '''
         super().__init__()
         self._actual_temperature = actual_temperature
@@ -96,8 +118,11 @@ class ProcessActuators(QThread):
                   actual_actuators)
 
     def _calculate_ventilation_state(self):
-        '''based on linear regression calculates the voltage of the
-        ventilation
+        '''Based on linear regression calculates the voltage of the
+        ventilation. Linear regression: y=a*x+b
+        
+        Returns the output voltage of the ventilation based on the humidity
+        level
         '''
         if self._actual_humidity < self._humidity_limit:
             return 0       
@@ -113,12 +138,20 @@ class ProcessActuators(QThread):
 class XYBuffer(object):
     '''A class for holding X and Y about the sensor
 
-    Normally we would like to hold data for the last hour
-    This class can be used for plotting sensor data as a moving window
+    Basically a ring buffer, which serves as the data input for plotting
+    sensor values as a moving windows in pyqtgraph
     '''
-    def __init__(self, update_interval_secs, total_secs=3600,
+    def __init__(self,
+                 update_interval_secs,
+                 total_secs=3600,
                  data_type=float):
         '''XYBuffer constructor
+
+        Args:
+            update_interval_secs (int): How often is the pyqtgraph updated
+            total_secs (int): What's the maximum length of the moving window.
+                Default size 3600 seconds - i.e. 1 hour
+            data_type(): use numpy data types
         '''
         self.buffer_size = total_secs // update_interval_secs
         self.x_buffer = RingBuffer(size_max=self.buffer_size,
@@ -130,7 +163,7 @@ class XYBuffer(object):
         self._x_counter = 0
 
     def append_value(self, y_value):
-        '''Appends the y value to the y_buffer and increments the sample
+        '''Appends the y_value to the y_buffer and increments the sample
         number in the x_buffer
         '''
         self.y_buffer.append(y_value)
@@ -139,5 +172,7 @@ class XYBuffer(object):
 
     def get_actual_filled_values(self):
         '''Gets the values from the buffer, which are already filled
+        
+        Used for data plotting
         '''
         return self.x_buffer.partial, self.y_buffer.partial
