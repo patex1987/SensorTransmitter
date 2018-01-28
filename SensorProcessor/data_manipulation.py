@@ -45,10 +45,35 @@ class GetSensorsThread(QThread):
                 self.emit(SIGNAL('update_values(PyQt_PyObject)'),
                           actual_values)
                 print('IN THREAD')
-                #self.sleep(self.update_interval_secs)
-                self.msleep(15)
+                self.sleep(self.update_interval_secs)
+                #self.msleep(15)
             except NoDataError:
                 self.emit(SIGNAL('handle_error()'))
+
+
+class ProcessActuators(QThread):
+    def __init__(self,
+                 start_thread=False,
+                 lower_temp_limit,
+                 upper_temp_limit,
+                 humidity_limit=40):
+        '''
+        method constructor
+        '''
+        super().__init__()
+        self.start_thread = start_thread
+        self.update_interval_secs = update_interval_secs
+
+    def __del__(self):
+        self.wait()
+
+    def _get_sensor_data(self):
+        '''Downloads the data from the API
+        '''
+
+    def run(self):
+        '''Runs the thread until a signal is sent by the main thread to stop
+        '''
 
 
 class XYBuffer(object):
