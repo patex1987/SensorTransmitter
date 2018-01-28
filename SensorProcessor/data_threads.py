@@ -8,13 +8,13 @@ class NoDataError(Exception):
     pass
 
 class GetSensorsThread(QThread):
-    def __init__(self, start_thread=False, update_interval=1):
+    def __init__(self, start_thread=False, update_interval_secs=1):
         '''
         method constructor
         '''
         super().__init__()
         self.start_thread = start_thread
-        self.update_interval = update_interval
+        self.update_interval = update_interval_secs
 
     def __del__(self):
         self.wait()
@@ -42,7 +42,7 @@ class GetSensorsThread(QThread):
                 actual_values = self._get_sensor_data()
                 self.emit(SIGNAL('update_values(PyQt_PyObject)'),
                           actual_values)
-                #print('IN THREAD')
-                self.sleep(self.update_interval)
+                print('IN THREAD')
+                self.sleep(self.update_interval_secs)
             except NoDataError:
                 self.emit(SIGNAL('handle_error()'))
