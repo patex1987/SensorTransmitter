@@ -152,7 +152,16 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.lbl_Humidity_Value.setText(humidity)
 
     def closeEvent(self, event):
-        pass
+        print('CLOSING')
+        if self._retrieval_thread.isRunning():
+            print('CLOSING retrieval')
+            self._retrieval_thread.start_thread = False
+            self._retrieval_thread.wait()
+        if self._actuator_thread is None:
+            return
+        if self._actuator_thread.isRunning():
+            print('CLOSING actuator calculation')
+            self._actuator_thread.wait()
 
     def _process_values(self, sensor_values):
         '''Processes the data coming from the background thread
