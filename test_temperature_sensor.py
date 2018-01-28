@@ -16,6 +16,7 @@ def sensor():
     '''
     return Sensor(min_value=20,
                   max_value=80,
+                  unit='C',
                   move_range=(0.01, 1.0),
                   init_value=25)
 
@@ -51,6 +52,7 @@ def test_outofbound_raises():
     with pytest.raises(OutOfBoundException):
         Sensor(min_value=20,
                max_value=80,
+               unit='C',
                move_range=(0.01, 1.0),
                init_value=-25)
 
