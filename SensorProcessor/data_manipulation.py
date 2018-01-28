@@ -4,6 +4,7 @@ import requests
 from requests.exceptions import ConnectionError
 import numpy as np
 from collections import namedtuple
+from datetime import datetime as dt
 
 
 class NoDataError(Exception):
@@ -45,9 +46,7 @@ class GetSensorsThread(QThread):
                 actual_values = self._get_sensor_data()
                 self.emit(SIGNAL('update_values(PyQt_PyObject)'),
                           actual_values)
-                print('IN THREAD')
                 self.sleep(self.update_interval_secs)
-                #self.msleep(15)
             except NoDataError:
                 self.emit(SIGNAL('handle_error()'))
 
@@ -85,8 +84,8 @@ class ProcessActuators(QThread):
     def run(self):
         '''Calculates the output states of the actuators
         '''
-        Actuators = collections.namedtuple('Actuators',
-                                           'heating cooling ventilation')
+        Actuators = namedtuple('Actuators',
+                               'heating cooling ventilation')
         heating = int(self._actual_temperature < self._lower_temp_limit)
         cooling = int(self._actual_temperature > self._upper_temp_limit)
         ventilation = self._calculate_ventilation_state()
@@ -96,13 +95,18 @@ class ProcessActuators(QThread):
         self.emit(SIGNAL('actuator_values(PyQt_PyObject)'),
                   actual_actuators)
 
-    def _calculate_ventilation_state(self)
+    def _calculate_ventilation_state(self):
         '''based on linear regression calculates the voltage of the
         ventilation
         '''
-        coeff_a = self._max_voltage - self._min_voltage
-        coeff_b = self.min_voltage - (coeff_a*self._humidity_limit)
+        if self._actual_humidity < self._humidity_limit:
+            return 0       
+        volt_diff = self._max_voltage - self._min_voltage
+        humid_diff = 100 - self._humidity_limit
+        coeff_a = volt_diff / humid_diff
+        coeff_b = self._min_voltage - (coeff_a*self._humidity_limit)
         output_voltage = (coeff_a*self._actual_humidity) + coeff_b
+        return output_voltage
         
 
 
