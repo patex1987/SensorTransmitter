@@ -27,6 +27,11 @@ class ThreadTerminatedException(Exception):
 
 class Sensor(object):
     '''A class to generate random sensor data
+    
+    Modifies the sensor value in the background, using threading
+    Attributes:
+        unit(`str`): output unit of the sensor
+        actual_value (float): Actual sensor value
     '''
     _max_stagnations = 7
     _max_movements = 7
@@ -39,6 +44,15 @@ class Sensor(object):
                  unit,
                  move_range=(0.01, 1.0),
                  init_value=25):
+        '''Sensor's __init__ method
+        Args:
+            min_value (number like): minimum possible value of the sensor
+            max_value (number like): maximum possible value of the sensor
+            unit (str): output unit of the sensor
+            move_range (tuple - pair of `float`): raneg of possible values for
+                the sensor value change in one measurement cycle
+            init_value (number like): initial value of the sensor
+        '''
         if init_value < min_value or init_value >= max_value:
             raise OutOfBoundException('Initial value out of bound')
         self._min_value = min_value
@@ -53,8 +67,7 @@ class Sensor(object):
                                                      daemon=True)
 
     def run_data_generation(self):
-        '''
-        Runs the background thread for sensor data generation
+        '''Runs the background thread for sensor data generation
         '''
         if self._background_activity.is_alive():
             return
@@ -62,8 +75,7 @@ class Sensor(object):
         self._background_activity.start()
 
     def stop_data_generation(self):
-        '''
-        Stops the background thread
+        '''Stops the background thread (thread-safe way)
         '''
         if not self._background_activity.is_alive():
             return
@@ -71,8 +83,7 @@ class Sensor(object):
 
     @property
     def actual_value(self):
-        '''
-        Property for getting the actual value
+        '''Property for getting the actual value
         '''
         return self._act_value
 
@@ -98,8 +109,7 @@ class Sensor(object):
             return
 
     def _repeated_change(self, max_cycles, value_range, can_change_direction):
-        '''
-        Increases or decreases the sensor value
+        '''Increases or decreases the sensor value
         '''
         actual_cycles = random.randrange(1, max_cycles)
         for _ in range(actual_cycles):
@@ -111,8 +121,7 @@ class Sensor(object):
                                can_change_direcion=can_change_direction)
 
     def _change_value(self, amount, can_change_direcion):
-        '''
-        Increments the sensor value
+        '''Increments the sensor value
         '''
         new_value = self._act_value + (amount * self._direction)
         if not can_change_direcion:
