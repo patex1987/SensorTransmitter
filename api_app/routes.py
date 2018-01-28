@@ -37,9 +37,19 @@ def get_sensor_values():
     if arguments:
         raise InvalidRequest(message='No paramaters accepted')
     actual_temp = temperature_sensor.actual_value
+    temp_unit = temperature_sensor.unit
     actual_humidity = humidity_sensor.actual_value
-    result_val = {'temperature': actual_temp,
-                  'humidity': actual_humidity}
+    humidity_unit = humidity_sensor.unit
+    result_val = {
+                    'temperature': {
+                        'actual_value': actual_temp,
+                        'unit': temp_unit
+                    },
+                    'humidity': {
+                        'actual_value': actual_temp,
+                        'unit': temp_unit
+                    }
+                 }
     return jsonify(result_val)
 
 
