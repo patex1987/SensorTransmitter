@@ -3,6 +3,7 @@ from PyQt4.QtCore import QThread, SIGNAL, QTimer
 import sys
 import ui_design_updated
 from data_manipulation import GetSensorsThread
+from data_manipulation import ProcessActuators
 from data_manipulation import XYBuffer
 import time
 import datetime as dt
@@ -17,6 +18,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self._init_elems()
         self._assign_events()
         self._retrieval_thread = GetSensorsThread()
+        self._actuator_thread = None
         self._connect_signals()
         self._init_buffers()
         self._stop_plot = False
@@ -91,6 +93,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self._retrieval_thread.start()
         self._stop_plot = False
         self.update_direct_graphs()
+        self.update_actuator_graphs()
 
     def finish_retrieval(self):
         '''Sends a flag to the background thread to finish its activity
@@ -116,11 +119,34 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         if not self._stop_plot:
             self.graph_timer.singleShot(1000, self.update_direct_graphs)
 
+    def update_actuator_graphs(self):
+        '''Updates the actuator graphs
+        '''
+        x_heating, y_heating = self.heating_buffer.get_actual_filled_values()
+        x_cooling, y_cooling = self.cooling_buffer.get_actual_filled_values()
+        x_ventilation, y_ventilation = self.ventilation_buffer.get_actual_filled_values()
+
+        self.gr_Heat_State.plot(x_heating, y_heating, pen='r', clear=True)
+        self.gr_Cooling_state.plot(x_cooling, y_cooling, pen='r', clear=True)
+        self.gr_Venting.plot(x_ventilation, y_ventilation, pen='r', clear=True)
+
+        if not self._stop_plot:
+            self.graph_timer.singleShot(1000, self.update_actuator_graphs)
+
     def show_set_limits(self):
         '''updates the actually set limits on the GUI
         '''
         self.lbl_set_lower.setText(str(self.set_lower_limit))
         self.lbl_set_upper.setText(str(self.set_upper_limit))
+
+    def update_direct_labels(self, temp_val, temp_unit, humid_val,
+                             humid_unit):
+        '''Updates temperature and humidity value labels
+        '''
+        temperature = '{0:.2f} {1}'.format(temp_val, temp_unit)
+        humidity = '{0:.2f} {1}'.format(humid_val, humid_unit)
+        self.lbl_Temp_Value.setText(temperature)
+        self.lbl_Humidity_Value.setText(humidity)
 
     def closeEvent(self, event):
         pass
@@ -135,6 +161,30 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.update_direct_labels(temp_val, temp_unit, humid_val, humid_unit)
         self.temperature_buffer.append_value(temp_val)
         self.humidity_buffer.append_value(humid_val)
+        self._start_actuator_thread(temp_val, humid_val)
+
+    def _start_actuator_thread(self, act_temperature, act_humidity):
+        '''Starts the actuator processing thread
+        
+        Opposed to the _retrieval_thread, this thread run one sequence of
+        commands
+        '''
+        self._actuator_thread = ProcessActuators(act_temperature,
+                                                 act_humidity,
+                                                 self.set_lower_limit,
+                                                 self.set_upper_limit)
+        self.connect(self._actuator_thread,
+                     SIGNAL('actuator_values(PyQt_PyObject)'),
+                     self._update_actuators)
+        self._actuator_thread.start()
+
+    def _update_actuators(self, actuator_values):
+        '''Processes the data received from the _actuator_thread, updates the
+        buffers.
+        '''
+        self.heating_buffer.append_value(actuator_values.heating)
+        self.cooling_buffer.append_value(actuator_values.cooling)
+        self.ventilation_buffer.append_value(actuator_values.ventilation)
 
     def _finished(self):
         '''sets back the state of the buttons to the initial state
@@ -159,15 +209,6 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         '''
         self.lbl_act_upper.setText(str(slider_value))
 
-    def update_direct_labels(self, temp_val, temp_unit, humid_val,
-                             humid_unit):
-        '''Updates temperature and humidity value labels
-        '''
-        temperature = '{0:.2f} {1}'.format(temp_val, temp_unit)
-        humidity = '{0:.2f} {1}'.format(humid_val, humid_unit)
-        self.lbl_Temp_Value.setText(temperature)
-        self.lbl_Humidity_Value.setText(humidity)
-
     def _try_update_limits(self):
         '''Checks the values of the horizontal sliders, if the values are ok,
         then it updates the set values
@@ -185,7 +226,7 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.set_lower_limit = new_lower_limit
         self.set_upper_limit = new_upper_limit
         self.show_set_limits()
-        
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
