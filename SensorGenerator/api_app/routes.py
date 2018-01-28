@@ -46,8 +46,8 @@ def get_sensor_values():
                         'unit': temp_unit
                     },
                     'humidity': {
-                        'actual_value': actual_temp,
-                        'unit': temp_unit
+                        'actual_value': actual_humidity,
+                        'unit': humidity_unit
                     }
                  }
     return jsonify(result_val)
