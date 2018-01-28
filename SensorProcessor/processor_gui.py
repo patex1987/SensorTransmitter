@@ -67,6 +67,16 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.humidity_buffer = XYBuffer(update_interval_secs=update_interval,
                                         total_secs=3600,
                                         data_type=float)
+        self.heating_buffer = XYBuffer(update_interval_secs=update_interval,
+                                       total_secs=3600,
+                                       data_type=np.int8)
+        self.cooling_buffer = XYBuffer(update_interval_secs=update_interval,
+                                       total_secs=3600,
+                                       data_type=np.int8)
+        self.ventilation_buffer = XYBuffer(update_interval_secs=update_interval,
+                                           total_secs=3600,
+                                           data_type=float)
+              
 
     def start_retrieval(self):
         '''Runs the background thread to collect the data from the generator
@@ -127,6 +137,8 @@ class SensorProcessor(QtGui.QMainWindow, ui_design_updated.Ui_frm_main):
         self.humidity_buffer.append_value(humid_val)
 
     def _finished(self):
+        '''sets back the state of the buttons to the initial state
+        '''
         self.btn_Start.setEnabled(True)
         self.btn_Stop.setEnabled(False)
         self.btn_Apply_Limit.setEnabled(False)
