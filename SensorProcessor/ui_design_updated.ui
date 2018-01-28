@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>frm_main</class>
+ <widget class="QWidget" name="frm_main">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>896</width>
+    <height>767</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>896</width>
+    <height>767</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>896</width>
+    <height>767</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Sensor processor</string>
+  </property>
+  <widget class="QSlider" name="slider_lower">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>358</y>
+     <width>251</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>10</number>
+   </property>
+   <property name="maximum">
+    <number>40</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSlider" name="slider_upper">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>402</y>
+     <width>251</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>10</number>
+   </property>
+   <property name="maximum">
+    <number>40</number>
+   </property>
+   <property name="value">
+    <number>40</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="invertedAppearance">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="Line" name="line">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>456</y>
+     <width>256</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_lower_current_title">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>470</y>
+     <width>91</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Current lower limit:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_set_lower">
+   <property name="geometry">
+    <rect>
+     <x>522</x>
+     <y>470</y>
+     <width>54</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_upper_current_title">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>492</y>
+     <width>93</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Current upper limit:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_set_upper">
+   <property name="geometry">
+    <rect>
+     <x>522</x>
+     <y>492</y>
+     <width>54</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_act_lower">
+   <property name="geometry">
+    <rect>
+     <x>522</x>
+     <y>339</y>
+     <width>46</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_act_upper">
+   <property name="geometry">
+    <rect>
+     <x>522</x>
+     <y>383</y>
+     <width>46</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_Start">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>9</y>
+     <width>151</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Start measurement</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_Stop">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>38</y>
+     <width>151</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Stop measurement</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Temp_Title">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>67</y>
+     <width>93</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Actual temperature</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Humidity_Title">
+   <property name="geometry">
+    <rect>
+     <x>443</x>
+     <y>67</y>
+     <width>73</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Actual humidity</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Temp_Value">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>86</y>
+     <width>421</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Humidity_Value">
+   <property name="geometry">
+    <rect>
+     <x>443</x>
+     <y>86</y>
+     <width>441</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="PlotWidget" name="gr_Temperature">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>107</y>
+     <width>421</width>
+     <height>192</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+  </widget>
+  <widget class="PlotWidget" name="gr_Humidity">
+   <property name="geometry">
+    <rect>
+     <x>443</x>
+     <y>107</y>
+     <width>441</width>
+     <height>192</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Lower_Temp_Title">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>339</y>
+     <width>113</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Lower temperature limit</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Upper_Temp_Title">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>383</y>
+     <width>113</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Upper temperature limit</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_Apply_Limit">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>427</y>
+     <width>251</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Apply limits</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Heat_Title">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>513</y>
+     <width>65</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Heating state</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Cooling">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>513</y>
+     <width>63</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cooling state</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_Ao1">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>510</y>
+     <width>82</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>AO1 - air venting</string>
+   </property>
+  </widget>
+  <widget class="PlotWidget" name="gr_Heat_State">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>532</y>
+     <width>291</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="PlotWidget" name="gr_Cooling_state">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>532</y>
+     <width>256</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="PlotWidget" name="gr_Venting">
+   <property name="geometry">
+    <rect>
+     <x>577</x>
+     <y>532</y>
+     <width>301</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">pyqtgraph</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
